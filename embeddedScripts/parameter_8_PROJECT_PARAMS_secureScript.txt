@@ -1,0 +1,116 @@
+/*
+PROJECT_PARAMS script: 
+Creates an HTML table for parameter selction with links to scriptlets
+Hovering over a checkbox  reveals the TYPE of parameter
+*/
+lastConfig=LAST_CONFIGURATION.split('#')[-1]
+options=[]
+job=jenkins.model.Jenkins.instance.getJob(SOURCE_PROJECT)
+
+k=1
+
+job.properties.each{
+  if( it.value.class==hudson.model.ParametersDefinitionProperty){
+    println 'Job Parameters' 
+    it.value.getParameterDefinitions().each{pdn->
+     jobProp=['class':'','name':'','refParams':'','scriptClass':'','script':'','codeRef':'']
+  jobProp.class= (pdn.class as String).split('\\.')[-1]
+  jobProp.description= pdn.description.replace('<','<!--').replace('>','-->').replace('"','')
+  jobProp.name=(pdn.name!='')? pdn.name:"UNNAMED_$k"
+      
+    if (pdn  in org.biouno.unochoice.UnoChoiceParameter 
+      && pdn.getScript().getClass()==org.biouno.unochoice.model.ScriptlerScript ){
+        jobProp.scriptClass='ScriptlerScript'
+        jobProp.scriptlet=pdn.getScript().scriptlerScriptId       
+      }
+    if (pdn  in org.biouno.unochoice.UnoChoiceParameter){ 
+        jobProp.scriptClass=pdn.getScript().getClass()
+        switch(jobProp.scriptClass) {
+            case org.biouno.unochoice.model.ScriptlerScript:
+            jobProp.script=pdn.getScript().scriptlerScriptId
+            jobProp.codeRef="/scriptler/runScript?id=${jobProp.script}"   
+            break
+            case org.biouno.unochoice.model.GroovyScript:            
+          if(lastConfig!=''){
+            jobProp.script="parameter_${k}_${jobProp.name}_secureScript.txt"
+            jobProp.codeRef="/job/JOB_CONFIG_ANALYZER/$lastConfig/artifact/embeddedScripts/${jobProp.script}/*view*/"
+          }else{
+            jobProp.script="NOT_PARSED_YET-ClickToAnalyze"
+            jobProp.codeRef="/job/JOB_CONFIG_ANALYZER/build"
+          }
+            break
+        } 
+              
+      }
+
+      if (pdn in org.biouno.unochoice.CascadeChoiceParameter || pdn in org.biouno.unochoice.DynamicReferenceParameter){
+        jobProp.refParams= pdn.getReferencedParameters()
+      }
+      options.add(jobProp)
+      k++
+    }
+  } 
+  
+}//end each Parameter Definition Property
+//return options
+
+tablePrefix="""
+		<style type="text/css">
+		.tooltip {
+			border-bottom: 1px dotted #000000; color: #000000; outline: none;
+			cursor: help; text-decoration: none;
+			position: relative;
+		}
+		.tooltip span {
+			margin-left: -999em;
+			position: absolute;
+		}
+		.tooltip:hover span {
+			border-radius: 5px 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; 
+			box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.1); -webkit-box-shadow: 5px 5px rgba(0, 0, 0, 0.1); -moz-box-shadow: 5px 5px rgba(0, 0, 0, 0.1);
+			font-family: Calibri, Tahoma, Geneva, sans-serif;
+			position: absolute; left: 1em; top: 2em; z-index: 99;
+			margin-left: 0; width: 250px;
+		}
+		.tooltip:hover img {
+			border: 0; margin: -10px 0 0 -55px;
+			float: left; position: absolute;
+		}
+		.tooltip:hover em {
+			font-family: Candara, Tahoma, Geneva, sans-serif; font-size: 1.2em; font-weight: bold;
+			display: block; padding: 0.2em 0 0.6em 0;
+		}
+		.classic { padding: 0.8em 1em; }
+		.custom { padding: 0.5em 0.8em 0.8em 2em; }
+		* html a:hover { background: transparent; }
+		.classic {background: #FFFFAA; border: 1px solid #FFAD33; }
+		.critical { background: #FFCCAA; border: 1px solid #FF3334;	}
+		.help { background: #9FDAEE; border: 1px solid #2BB0D7;	}
+		.info { background: #9FDAEE; border: 1px solid #2BB0D7;	}
+		.warning { background: #FFFFAA; border: 1px solid #FFAD33; }
+		</style>
+<input type="checkbox" id="select_allParams" name="allParamChecked" onclick="selectAllSourceParams()"> SELECT ALL</>
+<table width="100%"">
+                  <thead>
+                    <tr>
+                    <th style="border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">ORIGINAL_PARAMNAME</th>
+                    <th style="border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">NEW_PARAMNAME</th>
+                    <th style="border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">REF_PARAMS</th>
+					<th style="border-bottom: 1px solid grey; border-top: 2px solid grey; text-align: center;">SCRIPT</th>                
+                    </tr>
+                  </thead>
+                <tbody>
+                """ 
+tableMain=options.collect{"""<tr><td style="width:25%"> <input type="checkbox" id="check_${it.name}" name="${it.name}" " 
+value="${it.name}"/>
+<a class="tooltip" >${it.name}<span class="info">[${it.class}]${it.description}</span></a>
+</td>
+<td style="width:25%; border: 1px solid #2196f3;"><input id="${it.name}" class="setting-input"  type="text"  name="${it.name}"  value="${it.name}"></td>
+<td style="width:30%"><input ${(it.refParams!='')?'ref_'+it.refParams:''} type="text" class="setting-input"   name="${it.refParams}"  value="${it.refParams}" disabled></td>
+<td style="width:100%"><a id="${it.script}" type="text" href="${it.codeRef}" 
+    onclick="window.open(this.href,'nom_Popup','​height=400 , width=400 ,location=no ,resizable=yes ,scrollbars=yes');return false;"> ${it.script}</a></td>
+<tr>"""}.join('\n')
+
+tablePostfix="""</tbody></table>
+"""
+return tablePrefix+tableMain+tablePostfix
