@@ -1,8 +1,5 @@
 # JOB_PARAM_ASSEMBLER README #
 JOB_PARAM_ASSEMBLER:A utility job to jumpstart job assembly from ready made components. Select parameters from one or more freestyle projects
-<p>To Copy Builders and Publishers need to use Scriptlets
-<p><a href="http://nrusca-sd189.nibr.novartis.net:8080/scriptler/runScript?id=JenkinsJobBuilderCopy.groovy">JenkinsJobBuilderCopy</a>
-<p><a href="http://nrusca-sd189.nibr.novartis.net:8080/scriptler/runScript?id=JenkinsJobBuildWrapperCopy.groovy">JenkinsJobBuildWrapperCopy</a>
 
 ### What is this repository for? ###
 
