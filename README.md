@@ -31,12 +31,11 @@ The repository provides an archive of the key artifacts required to setup (or up
 
 ### How do I build this job? ###
 
-1. 
-2. 
-3. 
-4. 
+1. Select a free-style Jenkins job
+2. Select one or more job parameters to copy
+3. Add selected parameters to the list of parameters to be copied to target job
+4. Repeat steps 1,2,3 as needed
+5. Manage and re-order the parameter list as needed with the appropriate buttons
+6. Check whether to append to or overwrite existing target project parameters
+7. Build it!
 
-
-### Who do I talk to? ###
-
-* Ioannis K. Moutsatsos
