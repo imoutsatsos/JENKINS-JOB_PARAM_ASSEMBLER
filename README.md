@@ -1,5 +1,5 @@
 # JOB_PARAM_ASSEMBLER README #
-JOB_PARAM_ASSEMBLER:A utility job to jumpstart job assembly from ready made components. Select parameters from one or more freestyle projects
+A utility job to jumpstart job parameter assembly from ready made components. Easily copy build parameters from one or more freestyle projects to a target project. Especially useful when Active Choice parameters with complex dependencies are used.
 
 ### What is this repository for? ###
 
